@@ -10,6 +10,7 @@ enum ErrorShowType {
   NOTIFICATION = 3,
   REDIRECT = 9,
 }
+
 // 与后端约定的响应数据格式
 interface ResponseStructure {
   success: boolean;
@@ -25,6 +26,8 @@ interface ResponseStructure {
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const errorConfig: RequestConfig = {
+  baseURL: 'http://localhost:7969',
+  withCredentials: true,
   // 错误处理： umi@3 的错误处理方案。
   errorConfig: {
     // 错误抛出
