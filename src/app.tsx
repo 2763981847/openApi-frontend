@@ -1,12 +1,11 @@
 import Footer from '@/components/Footer';
-import { Question, SelectLang } from '@/components/RightContent';
-import { getLoginUserUsingGET } from '@/services/openapi-backend/userController';
-import { InitialState } from '@/typings';
+import RightContent from '@/components/RightContent';
 import { LinkOutlined } from '@ant-design/icons';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
-import { errorConfig } from './requestErrorConfig';
+import { requestConfig } from './requestConfig';
+import {getLoginUserUsingGET} from "@/services/openapi-backend/userController";
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -15,9 +14,10 @@ const loginPath = '/user/login';
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * */
 export async function getInitialState(): Promise<InitialState> {
+  // 当页面首次加载时，获取要全局保存的数据，比如用户登录信息
   const state: InitialState = {
     loginUser: undefined,
-  };
+  }
   try {
     const res = await getLoginUserUsingGET();
     if (res.data) {
@@ -32,7 +32,8 @@ export async function getInitialState(): Promise<InitialState> {
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
   return {
-    actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
+    layout: "top",
+    rightContentRender: () => <RightContent />,
     waterMarkProps: {
       content: initialState?.loginUser?.userName,
     },
@@ -76,22 +77,24 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
-    childrenRender: (children) => {
+    childrenRender: (children, props) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
         <>
           {children}
-          <SettingDrawer
-            disableUrlParams
-            enableDarkTheme
-            settings={initialState?.settings}
-            onSettingChange={(settings) => {
-              setInitialState((preInitialState: any) => ({
-                ...preInitialState,
-                settings,
-              }));
-            }}
-          />
+          {!props.location?.pathname?.includes('/login') && (
+            <SettingDrawer
+              disableUrlParams
+              enableDarkTheme
+              settings={initialState?.settings}
+              onSettingChange={(settings) => {
+                setInitialState((preInitialState) => ({
+                  ...preInitialState,
+                  settings,
+                }));
+              }}
+            />
+          )}
         </>
       );
     },
@@ -104,6 +107,4 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  * 它基于 axios 和 ahooks 的 useRequest 提供了一套统一的网络请求和错误处理方案。
  * @doc https://umijs.org/docs/max/request#配置
  */
-export const request = {
-  ...errorConfig,
-};
+export const request = requestConfig;
